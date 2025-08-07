@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import apiService from '../services/api';
 
 const CounsellorModeContext = createContext();
 
@@ -12,25 +13,22 @@ export const useCounsellorMode = () => {
 
 export const CounsellorModeProvider = ({ children }) => {
   const [isCounsellorMode, setIsCounsellorMode] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(true); // Set to true to avoid blank screen
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  // Simple initialization
+  // Initialize counsellor mode based on JWT token
   useEffect(() => {
-    const savedMode = localStorage.getItem('counsellorMode');
-    if (savedMode === 'true') {
-      setIsCounsellorMode(true);
-    }
+    const isAuthenticated = apiService.isAuthenticated();
+    setIsCounsellorMode(isAuthenticated);
     setIsInitialized(true);
   }, []);
 
   const enableCounsellorMode = () => {
     setIsCounsellorMode(true);
-    localStorage.setItem('counsellorMode', 'true');
   };
 
   const disableCounsellorMode = () => {
     setIsCounsellorMode(false);
-    localStorage.removeItem('counsellorMode');
+    apiService.logout(); // This will remove the JWT token
   };
 
   const value = {

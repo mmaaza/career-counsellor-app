@@ -1,11 +1,29 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 class ApiService {
+  // Get JWT token from localStorage
+  getToken() {
+    return localStorage.getItem('adminToken');
+  }
+
+  // Set JWT token in localStorage
+  setToken(token) {
+    localStorage.setItem('adminToken', token);
+  }
+
+  // Remove JWT token from localStorage
+  removeToken() {
+    localStorage.removeItem('adminToken');
+  }
+
   async makeRequest(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
+    const token = this.getToken();
+    
     const config = {
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
       ...options,
@@ -15,6 +33,10 @@ class ApiService {
       const response = await fetch(url, config);
       
       if (!response.ok) {
+        // If unauthorized, remove invalid token
+        if (response.status === 401) {
+          this.removeToken();
+        }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
@@ -23,6 +45,41 @@ class ApiService {
       console.error('API request failed:', error);
       throw error;
     }
+  }
+
+  // Authentication methods
+  async login(credentials) {
+    return this.makeRequest('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    });
+  }
+
+  async register(userData) {
+    return this.makeRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData),
+    });
+  }
+
+  // Check if user is authenticated
+  isAuthenticated() {
+    const token = this.getToken();
+    if (!token) return false;
+    
+    try {
+      // Basic JWT token validation (decode payload to check expiration)
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.exp * 1000 > Date.now();
+    } catch (error) {
+      this.removeToken();
+      return false;
+    }
+  }
+
+  // Logout method
+  logout() {
+    this.removeToken();
   }
 
   // Booking related methods

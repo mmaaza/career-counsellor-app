@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { seedServices } = require('./serviceSeeder');
+const seedAdminUser = require('./adminSeeder');
 require('dotenv').config();
 
 // MongoDB connection options
@@ -23,6 +24,10 @@ async function connectDB() {
 async function runAllSeeders() {
   try {
     console.log('🚀 Starting database seeding process...\n');
+    
+    // Run admin user seeder
+    console.log('👤 Seeding Admin User...');
+    await seedAdminUser();
     
     // Run service seeder
     console.log('📋 Seeding Services...');

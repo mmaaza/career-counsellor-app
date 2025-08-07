@@ -1,11 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CounsellorModeProvider } from './contexts/CounsellorModeContext';
 import { DefaultLayout } from './layouts';
+import ProtectedAdminRoute from './components/ProtectedAdminRoute';
 import Home from './pages/Public/Home';
 import About from './pages/Public/About';
 import Services from './pages/Public/Services';
 import Booking from './pages/Public/Booking';
 import BookingManagement from './pages/Admin/BookingManagement';
+import AdminDashboard from './pages/Admin/Dashboard';
+import AdminLogin from './pages/Admin/Login';
 import Contact from './pages/Public/Contact';
 
 // Support Pages
@@ -30,7 +33,23 @@ const AppContent = () => {
       <Route path="/contact" element={<Contact />} />
       
       {/* Admin Routes */}
-      <Route path="/admin/bookings" element={<BookingManagement />} />
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route 
+        path="/admin/dashboard" 
+        element={
+          <ProtectedAdminRoute>
+            <AdminDashboard />
+          </ProtectedAdminRoute>
+        } 
+      />
+      <Route 
+        path="/admin/bookings" 
+        element={
+          <ProtectedAdminRoute>
+            <BookingManagement />
+          </ProtectedAdminRoute>
+        } 
+      />
       
       {/* Support Pages */}
       <Route path="/help-center" element={<HelpCenter />} />

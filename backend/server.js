@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 5000;
 const bookingRoutes = require('./routes/bookings');
 const serviceRoutes = require('./routes/services');
 // const contactRoutes = require('./routes/contacts');
-// const authRoutes = require('./routes/auth');
+const authRoutes = require('./routes/auth');
 
 // Middleware
 app.use(cors());
@@ -56,7 +56,7 @@ process.on('SIGINT', async () => {
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/services', serviceRoutes);
 // app.use('/api/contacts', contactRoutes);
-// app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes);
 
 // Test route
 app.get('/api/test', (req, res) => {
