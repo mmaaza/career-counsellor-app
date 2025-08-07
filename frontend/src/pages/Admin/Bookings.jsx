@@ -1,87 +1,67 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import AdminLayout from '../../layouts/AdminLayout';
+import apiService from '../../services/api';
 
 const Bookings = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalBookings: 0
+  });
 
-  const [bookings] = useState([
-    {
-      id: 1,
-      client: 'Emily Chen',
-      email: 'emily.chen@email.com',
-      phone: '+1 (555) 123-4567',
-      service: 'Career Counseling',
-      date: '2024-01-15',
-      time: '10:00 AM',
-      duration: '60 min',
-      status: 'confirmed',
-      amount: 150,
-      paymentStatus: 'paid',
-      notes: 'First-time client, interested in tech career transition'
-    },
-    {
-      id: 2,
-      client: 'Michael Rodriguez',
-      email: 'michael.r@email.com',
-      phone: '+1 (555) 234-5678',
-      service: 'Interview Preparation',
-      date: '2024-01-15',
-      time: '2:30 PM',
-      duration: '90 min',
-      status: 'confirmed',
-      amount: 200,
-      paymentStatus: 'paid',
-      notes: 'Software engineer role, Amazon interview prep'
-    },
-    {
-      id: 3,
-      client: 'Sarah Johnson',
-      email: 'sarah.j@email.com',
-      phone: '+1 (555) 345-6789',
-      service: 'Resume Review',
-      date: '2024-01-15',
-      time: '4:00 PM',
-      duration: '45 min',
-      status: 'pending',
-      amount: 100,
-      paymentStatus: 'pending',
-      notes: 'Marketing professional, 5 years experience'
-    },
-    {
-      id: 4,
-      client: 'David Park',
-      email: 'david.park@email.com',
-      phone: '+1 (555) 456-7890',
-      service: 'Career Assessment',
-      date: '2024-01-16',
-      time: '11:00 AM',
-      duration: '75 min',
-      status: 'confirmed',
-      amount: 175,
-      paymentStatus: 'paid',
-      notes: 'Recent graduate, exploring career options'
-    },
-    {
-      id: 5,
-      client: 'Lisa Wong',
-      email: 'lisa.wong@email.com',
-      phone: '+1 (555) 567-8901',
-      service: 'Skills Development Plan',
-      date: '2024-01-16',
-      time: '3:00 PM',
-      duration: '60 min',
-      status: 'cancelled',
-      amount: 150,
-      paymentStatus: 'refunded',
-      notes: 'Cancelled due to scheduling conflict'
+  // Fetch bookings from the backend
+  useEffect(() => {
+    fetchBookings();
+  }, [activeTab, filterStatus]);
+
+  const fetchBookings = async (page = 1) => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const queryParams = new URLSearchParams({
+        page: page.toString(),
+        limit: '20'
+      });
+      
+      if (filterStatus !== 'all') {
+        queryParams.append('status', filterStatus);
+      }
+      
+      const response = await apiService.getAllBookings(`?${queryParams}`);
+      
+      if (response.success) {
+        setBookings(response.data || []);
+        setPagination(response.pagination || {
+          currentPage: 1,
+          totalPages: 1,
+          totalBookings: 0
+        });
+      } else {
+        throw new Error(response.message || 'Failed to fetch bookings');
+      }
+    } catch (err) {
+      console.error('Error fetching bookings:', err);
+      setError(err.message || 'Failed to load bookings');
+      setBookings([]);
+    } finally {
+      setLoading(false);
     }
-  ]);
+  };
 
   const tabs = [
-    { id: 'all', label: 'All Bookings', count: bookings.length },
-    { id: 'today', label: 'Today', count: bookings.filter(b => b.date === '2024-01-15').length },
+    { id: 'all', label: 'All Bookings', count: pagination.totalBookings },
+    { id: 'today', label: 'Today', count: bookings.filter(b => {
+      const today = new Date().toISOString().split('T')[0];
+      const bookingDate = new Date(b.appointmentDate).toISOString().split('T')[0];
+      return bookingDate === today;
+    }).length },
     { id: 'upcoming', label: 'Upcoming', count: bookings.filter(b => b.status === 'confirmed').length },
     { id: 'pending', label: 'Pending', count: bookings.filter(b => b.status === 'pending').length },
     { id: 'completed', label: 'Completed', count: bookings.filter(b => b.status === 'completed').length }
@@ -120,15 +100,15 @@ const Bookings = () => {
   };
 
   const filteredBookings = bookings.filter(booking => {
-    const matchesSearch = booking.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         booking.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         booking.service.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = filterStatus === 'all' || booking.status === filterStatus;
+    const matchesSearch = booking.clientName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         booking.clientEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         booking.service?.toLowerCase().includes(searchTerm.toLowerCase());
     
     let matchesTab = true;
     if (activeTab === 'today') {
-      matchesTab = booking.date === '2024-01-15';
+      const today = new Date().toISOString().split('T')[0];
+      const bookingDate = new Date(booking.appointmentDate).toISOString().split('T')[0];
+      matchesTab = bookingDate === today;
     } else if (activeTab === 'upcoming') {
       matchesTab = booking.status === 'confirmed';
     } else if (activeTab === 'pending') {
@@ -137,76 +117,135 @@ const Bookings = () => {
       matchesTab = booking.status === 'completed';
     }
     
-    return matchesSearch && matchesStatus && matchesTab;
+    return matchesSearch && matchesTab;
   });
 
-  const handleStatusChange = (bookingId, newStatus) => {
-    // In a real app, this would make an API call
-    console.log(`Changing booking ${bookingId} status to ${newStatus}`);
+  const handleStatusChange = async (bookingId, newStatus) => {
+    try {
+      setError('');
+      const response = await apiService.updateBookingStatus(bookingId, newStatus);
+      
+      if (response.success) {
+        // Update local state
+        setBookings(prev => prev.map(booking => 
+          booking._id === bookingId 
+            ? { ...booking, status: newStatus }
+            : booking
+        ));
+      } else {
+        throw new Error(response.message || 'Failed to update booking status');
+      }
+    } catch (err) {
+      console.error('Error updating booking status:', err);
+      setError(err.message || 'Failed to update booking status');
+    }
   };
 
-  const handleSendReminder = (bookingId) => {
-    // In a real app, this would send an email/SMS reminder
-    console.log(`Sending reminder for booking ${bookingId}`);
+  const handleSendReminder = async (bookingId) => {
+    try {
+      setError('');
+      // Note: You'll need to add this endpoint to your backend
+      const response = await apiService.makeRequest(`/bookings/${bookingId}/send-reminder`, {
+        method: 'POST'
+      });
+      
+      if (response.success) {
+        alert('Reminder sent successfully!');
+      } else {
+        throw new Error(response.message || 'Failed to send reminder');
+      }
+    } catch (err) {
+      console.error('Error sending reminder:', err);
+      setError(err.message || 'Failed to send reminder');
+    }
   };
 
-  const handleAcceptBooking = (bookingId) => {
-    console.log(`Accepting booking ${bookingId}`);
-    // Update booking status to confirmed
+  const handleAcceptBooking = async (bookingId) => {
+    await handleStatusChange(bookingId, 'confirmed');
   };
 
-  const handleRejectBooking = (bookingId) => {
-    console.log(`Rejecting booking ${bookingId}`);
-    // Update booking status to cancelled
+  const handleRejectBooking = async (bookingId) => {
+    await handleStatusChange(bookingId, 'cancelled');
   };
 
   const handleReschedule = (bookingId) => {
-    console.log(`Opening reschedule modal for booking ${bookingId}`);
-    // Open reschedule modal
+    // Open reschedule modal - implement this feature later
+    alert('Reschedule feature coming soon!');
   };
 
   const handleViewDetails = (bookingId) => {
-    console.log(`Viewing details for booking ${bookingId}`);
-    // Open details modal
+    // Open details modal - implement this feature later
+    alert('View details feature coming soon!');
   };
 
-  const handleMarkCompleted = (bookingId) => {
-    console.log(`Marking booking ${bookingId} as completed`);
-    // Update booking status to completed
+  const handleMarkCompleted = async (bookingId) => {
+    await handleStatusChange(bookingId, 'completed');
   };
 
-  const handleRefund = (bookingId) => {
-    console.log(`Processing refund for booking ${bookingId}`);
-    // Process refund
+  const handleRefund = async (bookingId) => {
+    try {
+      setError('');
+      // Note: You'll need to add this endpoint to your backend
+      const response = await apiService.makeRequest(`/bookings/${bookingId}/refund`, {
+        method: 'POST'
+      });
+      
+      if (response.success) {
+        alert('Refund processed successfully!');
+        fetchBookings(); // Refresh data
+      } else {
+        throw new Error(response.message || 'Failed to process refund');
+      }
+    } catch (err) {
+      console.error('Error processing refund:', err);
+      setError(err.message || 'Failed to process refund');
+    }
+  };
+
+  const formatDate = (dateString) => {
+    try {
+      return new Date(dateString).toLocaleDateString();
+    } catch {
+      return dateString;
+    }
+  };
+
+  const formatTime = (timeString) => {
+    try {
+      return new Date(timeString).toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      });
+    } catch {
+      return timeString;
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Link
-                to="/"
-                className="text-gray-600 hover:text-blue-600 transition-colors duration-200"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                </svg>
-              </Link>
-              <h1 className="text-2xl font-bold text-gray-900">Booking Management</h1>
+    <AdminLayout title="Booking Management">
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="flex">
+            <span className="text-red-400 text-xl mr-3">⚠️</span>
+            <div>
+              <h3 className="text-sm font-medium text-red-800">Error</h3>
+              <p className="text-sm text-red-700 mt-1">{error}</p>
             </div>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 shadow-lg hover:shadow-xl">
-              New Booking
-            </button>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Tabs */}
-        <div className="bg-white rounded-lg shadow-lg border border-gray-200 mb-6">
+      {/* Loading State */}
+      {loading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        </div>
+      ) : (
+        <>
+          {/* Tabs */}
+          <div className="bg-white rounded-lg shadow-lg border border-gray-200 mb-6">
           <nav className="flex space-x-1 p-4">
             {tabs.map((tab) => (
               <button
@@ -509,14 +548,15 @@ const Bookings = () => {
                 <span className="text-xl">📊</span>
               </div>
               <p className="text-3xl font-bold text-purple-600 mb-1">
-                ${Math.round(filteredBookings.reduce((sum, b) => sum + b.amount, 0) / filteredBookings.length) || 0}
+                ${Math.round(filteredBookings.reduce((sum, b) => sum + (b.amount || 0), 0) / filteredBookings.length) || 0}
               </p>
               <p className="text-sm text-gray-600 font-medium">Avg. Value</p>
             </div>
           </div>
         </div>
-      </div>
-    </div>
+        </>
+      )}
+    </AdminLayout>
   );
 };
 

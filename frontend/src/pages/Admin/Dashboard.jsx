@@ -1,31 +1,97 @@
-import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useCounsellorMode } from '../../contexts/CounsellorModeContext';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import AdminLayout from '../../layouts/AdminLayout';
+import apiService from '../../services/api';
 
 const Dashboard = () => {
-  const { disableCounsellorMode } = useCounsellorMode();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [stats] = useState({
-    todaySessions: 8,
-    weekSessions: 23,
-    pendingBookings: 12,
-    totalClients: 156,
-    revenue: 15240,
-    activeClients: 45
+  const [stats, setStats] = useState({
+    todaySessions: 0,
+    weekSessions: 0,
+    pendingBookings: 0,
+    totalClients: 0,
+    revenue: 0,
+    activeClients: 0
   });
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [upcomingSessions, setUpcomingSessions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  const adminPages = [
-    {
-      name: 'Dashboard',
-      path: '/admin/dashboard',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
-        </svg>
-      ),
-      description: 'Overview & Analytics'
-    },
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const response = await apiService.getDashboardStats();
+      
+      if (response.success) {
+        const data = response.data;
+        setStats({
+          todaySessions: data.todaySessions,
+          weekSessions: data.weekSessions,
+          pendingBookings: data.pendingBookings,
+          totalClients: data.totalClients,
+          revenue: data.revenue,
+          activeClients: data.activeClients
+        });
+        
+        // Convert recent bookings to activities
+        const activities = data.recentBookings.slice(0, 4).map((booking, index) => {
+          const timeAgo = getTimeAgo(booking.createdAt);
+          return {
+            id: booking._id,
+            type: 'booking',
+            message: `New booking from ${booking.clientInfo?.name || 'Unknown'} for ${booking.serviceName}`,
+            time: timeAgo,
+            icon: '📅'
+          };
+        });
+        setRecentActivities(activities);
+        
+        // Set today's schedule
+        const todaysSchedule = data.todaysSchedule.map(booking => ({
+          id: booking._id,
+          client: booking.clientInfo?.name || 'Unknown',
+          service: booking.serviceName,
+          time: booking.appointmentTime,
+          duration: booking.serviceDuration,
+          status: booking.status
+        }));
+        setUpcomingSessions(todaysSchedule);
+        
+      } else {
+        throw new Error(response.message || 'Failed to fetch dashboard data');
+      }
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      setError(err.message || 'Failed to load dashboard data');
+      // Keep default values on error
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getTimeAgo = (dateString) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  };
+
+  // Quick actions for the sidebar - using the same structure as the navigation
+  const quickActions = [
     {
       name: 'Bookings',
       path: '/admin/bookings',
@@ -79,273 +145,188 @@ const Dashboard = () => {
     }
   ];
 
-  const recentActivities = [
-    {
-      id: 1,
-      type: 'booking',
-      message: 'New booking from Emily Chen for Career Counseling',
-      time: '10 minutes ago',
-      icon: '📅'
-    },
-    {
-      id: 2,
-      type: 'payment',
-      message: 'Payment received - $150 from Michael Rodriguez',
-      time: '25 minutes ago',
-      icon: '💰'
-    },
-    {
-      id: 3,
-      type: 'message',
-      message: 'New message from Sarah Johnson about rescheduling',
-      time: '1 hour ago',
-      icon: '💬'
-    },
-    {
-      id: 4,
-      type: 'review',
-      message: 'New 5-star review from David Park',
-      time: '2 hours ago',
-      icon: '⭐'
-    }
-  ];
-
-  const upcomingSessions = [
-    {
-      id: 1,
-      client: 'Emily Chen',
-      service: 'Career Counseling',
-      time: '10:00 AM',
-      duration: '60 min',
-      status: 'confirmed'
-    },
-    {
-      id: 2,
-      client: 'Michael Rodriguez',
-      service: 'Interview Prep',
-      time: '2:30 PM',
-      duration: '90 min',
-      status: 'confirmed'
-    },
-    {
-      id: 3,
-      client: 'Sarah Johnson',
-      service: 'Resume Review',
-      time: '4:00 PM',
-      duration: '45 min',
-      status: 'pending'
-    }
-  ];
-
-  const handleLogout = () => {
-    disableCounsellorMode();
-    navigate('/');
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link
-                to="/"
-                className="text-gray-600 hover:text-blue-600 text-sm font-medium"
+    <AdminLayout title="Admin Dashboard">
+      {/* Error Message */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+          <div className="flex">
+            <span className="text-red-400 text-xl mr-3">⚠️</span>
+            <div>
+              <h3 className="text-sm font-medium text-red-800">Error</h3>
+              <p className="text-sm text-red-700 mt-1">{error}</p>
+              <button 
+                onClick={fetchDashboardData}
+                className="text-sm text-red-800 underline mt-2 hover:text-red-600"
               >
-                View Public Site
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
-              >
-                Logout
+                Try again
               </button>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Navigation Pills */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8 overflow-x-auto py-4">
-            {adminPages.map((page) => (
-              <Link
-                key={page.path}
-                to={page.path}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                  location.pathname === page.path
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50'
-                }`}
-              >
-                {page.icon}
-                <span>{page.name}</span>
-              </Link>
-            ))}
-          </div>
+      {/* Loading State */}
+      {loading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
         </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Today's Sessions</p>
-                <p className="text-3xl font-bold text-blue-600">{stats.todaySessions}</p>
-              </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">📅</span>
-              </div>
+      ) : (
+        <>
+          {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Today's Sessions</p>
+              <p className="text-3xl font-bold text-blue-600">{stats.todaySessions}</p>
             </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">This Week</p>
-                <p className="text-3xl font-bold text-green-600">{stats.weekSessions}</p>
-              </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">📊</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Pending Bookings</p>
-                <p className="text-3xl font-bold text-orange-600">{stats.pendingBookings}</p>
-              </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">⏳</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-3xl font-bold text-purple-600">${stats.revenue.toLocaleString()}</p>
-              </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <span className="text-2xl">💰</span>
-              </div>
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">📅</span>
             </div>
           </div>
         </div>
 
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Quick Actions */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-              <div className="space-y-3">
-                {adminPages.slice(1).map((page) => (
-                  <Link
-                    key={page.path}
-                    to={page.path}
-                    className="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors group"
-                  >
-                    <div className="text-blue-600 group-hover:text-blue-700 mr-3">
-                      {page.icon}
-                    </div>
-                    <div>
-                      <p className="font-medium text-gray-900 group-hover:text-blue-700">
-                        {page.name}
-                      </p>
-                      <p className="text-sm text-gray-500">{page.description}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">This Week</p>
+              <p className="text-3xl font-bold text-green-600">{stats.weekSessions}</p>
             </div>
-
-            {/* Recent Activity */}
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-              <div className="space-y-4">
-                {recentActivities.map((activity) => (
-                  <div key={activity.id} className="flex items-start space-x-3">
-                    <span className="text-lg">{activity.icon}</span>
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-900">{activity.message}</p>
-                      <p className="text-xs text-gray-500">{activity.time}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">📊</span>
             </div>
           </div>
+        </div>
 
-          {/* Today's Schedule */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900">Today's Schedule</h3>
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Pending Bookings</p>
+              <p className="text-3xl font-bold text-orange-600">{stats.pendingBookings}</p>
+            </div>
+            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">⏳</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total Revenue</p>
+              <p className="text-3xl font-bold text-purple-600">${stats.revenue.toLocaleString()}</p>
+            </div>
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+              <span className="text-2xl">💰</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Quick Actions */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+            <div className="space-y-3">
+              {quickActions.map((page) => (
                 <Link
-                  to="/admin/schedule"
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  key={page.path}
+                  to={page.path}
+                  className="flex items-center p-3 rounded-lg hover:bg-gray-50 transition-colors group"
                 >
-                  View Full Calendar →
-                </Link>
-              </div>
-
-              <div className="space-y-4">
-                {upcomingSessions.map((session) => (
-                  <div
-                    key={session.id}
-                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-lg">👤</span>
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900">{session.client}</h4>
-                        <p className="text-sm text-gray-600">{session.service}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium text-gray-900">{session.time}</p>
-                      <p className="text-sm text-gray-600">{session.duration}</p>
-                    </div>
-                    <div>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          session.status === 'confirmed'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}
-                      >
-                        {session.status}
-                      </span>
-                    </div>
+                  <div className="text-blue-600 group-hover:text-blue-700 mr-3">
+                    {page.icon}
                   </div>
-                ))}
-              </div>
+                  <div>
+                    <p className="font-medium text-gray-900 group-hover:text-blue-700">
+                      {page.name}
+                    </p>
+                    <p className="text-sm text-gray-500">{page.description}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
 
-              {upcomingSessions.length === 0 && (
-                <div className="text-center py-8">
-                  <span className="text-4xl mb-4 block">📅</span>
-                  <p className="text-gray-500">No sessions scheduled for today</p>
+          {/* Recent Activity */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+            <div className="space-y-4">
+              {recentActivities.map((activity) => (
+                <div key={activity.id} className="flex items-start space-x-3">
+                  <span className="text-lg">{activity.icon}</span>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-900">{activity.message}</p>
+                    <p className="text-xs text-gray-500">{activity.time}</p>
+                  </div>
                 </div>
-              )}
+              ))}
             </div>
           </div>
         </div>
+
+        {/* Today's Schedule */}
+        <div className="lg:col-span-2">
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-gray-900">Today's Schedule</h3>
+              <Link
+                to="/admin/schedule"
+                className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              >
+                View Full Calendar →
+              </Link>
+            </div>
+
+            <div className="space-y-4">
+              {upcomingSessions.map((session) => (
+                <div
+                  key={session.id}
+                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span className="text-lg">👤</span>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-900">{session.client}</h4>
+                      <p className="text-sm text-gray-600">{session.service}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-medium text-gray-900">{session.time}</p>
+                    <p className="text-sm text-gray-600">{session.duration}</p>
+                  </div>
+                  <div>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        session.status === 'confirmed'
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}
+                    >
+                      {session.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {upcomingSessions.length === 0 && (
+              <div className="text-center py-8">
+                <span className="text-4xl mb-4 block">📅</span>
+                <p className="text-gray-500">No sessions scheduled for today</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+        </>
+      )}
+    </AdminLayout>
   );
 };
 

@@ -90,8 +90,63 @@ class ApiService {
     });
   }
 
-  async getAllBookings() {
-    return this.makeRequest('/bookings');
+  async getAllBookings(queryString = '') {
+    return this.makeRequest(`/bookings${queryString}`);
+  }
+
+  async getDashboardStats() {
+    // This will aggregate data from existing endpoints
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - 7);
+      
+      // Get all bookings and calculate stats client-side
+      const bookingsResponse = await this.getAllBookings('?limit=1000');
+      
+      if (!bookingsResponse.success) {
+        throw new Error('Failed to fetch bookings for stats');
+      }
+      
+      const bookings = bookingsResponse.data || [];
+      const todayBookings = bookings.filter(booking => {
+        const bookingDate = new Date(booking.appointmentDate).toISOString().split('T')[0];
+        return bookingDate === today;
+      });
+      
+      const weekBookings = bookings.filter(booking => {
+        const bookingDate = new Date(booking.appointmentDate);
+        return bookingDate >= weekStart;
+      });
+      
+      const pendingBookings = bookings.filter(booking => booking.status === 'pending');
+      const confirmedBookings = bookings.filter(booking => booking.status === 'confirmed');
+      
+      // Calculate revenue from completed bookings
+      const revenue = bookings
+        .filter(booking => booking.status === 'completed')
+        .reduce((sum, booking) => sum + (booking.servicePrice || 0), 0);
+      
+      return {
+        success: true,
+        data: {
+          todaySessions: todayBookings.length,
+          weekSessions: weekBookings.length,
+          pendingBookings: pendingBookings.length,
+          totalClients: bookings.length, // Approximate - each booking represents a client interaction
+          revenue: revenue,
+          activeClients: confirmedBookings.length,
+          recentBookings: bookings.slice(0, 10), // Latest 10 bookings
+          todaysSchedule: todayBookings
+        }
+      };
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+      return {
+        success: false,
+        message: error.message || 'Failed to fetch dashboard statistics'
+      };
+    }
   }
 
   async getBookingById(id) {

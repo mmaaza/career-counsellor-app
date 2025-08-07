@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import AdminLayout from '../../layouts/AdminLayout';
 import apiService from '../../services/api';
 
 const BookingManagement = () => {
@@ -24,18 +25,43 @@ const BookingManagement = () => {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await apiService.getBookings(filters);
+      setError('');
+      
+      // Build query parameters
+      const queryParams = new URLSearchParams({
+        page: filters.page.toString(),
+        limit: '20'
+      });
+      
+      if (filters.status) {
+        queryParams.append('status', filters.status);
+      }
+      
+      if (filters.startDate) {
+        queryParams.append('startDate', filters.startDate);
+      }
+      
+      if (filters.endDate) {
+        queryParams.append('endDate', filters.endDate);
+      }
+      
+      const queryString = queryParams.toString();
+      const response = await apiService.getAllBookings(queryString ? `?${queryString}` : '');
       
       if (response.success) {
-        setBookings(response.data);
-        setPagination(response.pagination);
-        setError('');
+        setBookings(response.data || []);
+        setPagination(response.pagination || {
+          currentPage: 1,
+          totalPages: 1,
+          totalBookings: 0
+        });
       } else {
         throw new Error(response.message || 'Failed to fetch bookings');
       }
     } catch (error) {
       console.error('Error fetching bookings:', error);
       setError(error.message || 'Failed to fetch bookings');
+      setBookings([]);
     } finally {
       setLoading(false);
     }
@@ -105,15 +131,14 @@ const BookingManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Booking Management</h1>
-          <p className="text-gray-600 mt-2">Manage all customer bookings and appointments</p>
-        </div>
+    <AdminLayout title="Booking Management">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Booking Management</h1>
+        <p className="text-gray-600 mt-2">Manage all customer bookings and appointments</p>
+      </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+      {/* Filters */}
+      <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Filters</h2>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
@@ -240,13 +265,13 @@ const BookingManagement = () => {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div>
                               <div className="text-sm font-medium text-gray-900">
-                                {booking.clientInfo.name}
+                                {booking.clientInfo?.name || 'N/A'}
                               </div>
                               <div className="text-sm text-gray-500">
-                                {booking.clientInfo.email}
+                                {booking.clientInfo?.email || 'N/A'}
                               </div>
                               <div className="text-sm text-gray-500">
-                                {booking.clientInfo.phone}
+                                {booking.clientInfo?.phone || 'N/A'}
                               </div>
                             </div>
                           </td>
@@ -325,11 +350,11 @@ const BookingManagement = () => {
                     <p className="text-sm text-gray-700">
                       Showing{' '}
                       <span className="font-medium">
-                        {(pagination.currentPage - 1) * 10 + 1}
+                        {(pagination.currentPage - 1) * 20 + 1}
                       </span>{' '}
                       to{' '}
                       <span className="font-medium">
-                        {Math.min(pagination.currentPage * 10, pagination.totalBookings)}
+                        {Math.min(pagination.currentPage * 20, pagination.totalBookings)}
                       </span>{' '}
                       of{' '}
                       <span className="font-medium">{pagination.totalBookings}</span> results
@@ -377,8 +402,7 @@ const BookingManagement = () => {
             )}
           </>
         )}
-      </div>
-    </div>
+    </AdminLayout>
   );
 };
 
