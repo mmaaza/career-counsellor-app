@@ -4,7 +4,7 @@ import apiService from '../../services/api';
 
 const Booking = () => {
   const [searchParams] = useSearchParams();
-  const [currentStep, setCurrentStep] = useState(2); // Start from step 2 now
+  const [currentStep, setCurrentStep] = useState(1); // Start from step 1 - service selection
   const [selectedService, setSelectedService] = useState(null);
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
@@ -29,13 +29,8 @@ const Booking = () => {
       const service = services.find(s => s.id === parseInt(serviceId));
       if (service) {
         setSelectedService(service);
+        setCurrentStep(2); // Skip to step 2 if service is pre-selected
       }
-    }
-    
-    // If no service selected and no URL param, set default or show warning
-    if (!serviceId) {
-      // Could redirect to services page or set a default service
-      console.warn('No service selected. User should select a service first.');
     }
   }, [searchParams]);
 
@@ -45,37 +40,108 @@ const Booking = () => {
       name: "One-on-One Career Counseling",
       duration: "60 minutes",
       price: 150,
-      description: "Personalized career guidance session"
+      description: "Personalized career guidance and strategic planning session to help you navigate your professional journey.",
+      features: [
+        "Comprehensive career assessment",
+        "Goal setting and action planning",
+        "Industry insights and market analysis",
+        "Personalized career roadmap",
+        "Follow-up email summary",
+        "Resource recommendations"
+      ],
+      icon: "👥",
+      category: "Counseling"
     },
     {
       id: 2,
       name: "Quick Career Check-In",
       duration: "30 minutes",
       price: 85,
-      description: "Brief focused session for specific questions"
+      description: "Brief consultation perfect for specific questions, quick guidance, or follow-up sessions.",
+      features: [
+        "Focused problem-solving",
+        "Quick career advice",
+        "Resume quick review",
+        "Interview preparation tips",
+        "Actionable next steps"
+      ],
+      icon: "⚡",
+      category: "Counseling"
     },
     {
       id: 3,
-      name: "Resume Review & Enhancement",
-      duration: "45 minutes",
-      price: 120,
-      description: "Comprehensive resume optimization"
+      name: "Career Assessment & Planning",
+      duration: "90 minutes",
+      price: 200,
+      description: "Comprehensive assessment using validated tools to identify your ideal career path and create a detailed plan.",
+      features: [
+        "Myers-Briggs Type Indicator (MBTI)",
+        "Strong Interest Inventory",
+        "Values and skills assessment",
+        "Career exploration exercises",
+        "Detailed written report",
+        "90-day action plan"
+      ],
+      icon: "📊",
+      category: "Assessment"
     },
     {
       id: 4,
-      name: "Interview Preparation Session",
-      duration: "90 minutes",
-      price: 200,
-      description: "Mock interviews and preparation"
+      name: "Resume Review & Enhancement",
+      duration: "45 minutes",
+      price: 120,
+      description: "Professional resume review and optimization to help you stand out in today's competitive job market.",
+      features: [
+        "Comprehensive resume analysis",
+        "ATS optimization",
+        "Content and formatting improvements",
+        "Industry-specific keywords",
+        "Cover letter guidance",
+        "LinkedIn profile tips"
+      ],
+      icon: "📄",
+      category: "Documents"
     },
     {
       id: 5,
+      name: "Interview Preparation Session",
+      duration: "90 minutes",
+      price: 200,
+      description: "Intensive interview coaching with mock interviews and personalized feedback to boost your confidence.",
+      features: [
+        "Mock interview practice",
+        "Behavioral question preparation",
+        "Salary negotiation strategies",
+        "Body language coaching",
+        "Industry-specific interview tips",
+        "Post-interview follow-up guidance"
+      ],
+      icon: "🎯",
+      category: "Interview"
+    },
+    {
+      id: 6,
       name: "University & Major Guidance",
       duration: "75 minutes",
       price: 130,
-      description: "Academic planning and university selection"
+      description: "Specialized guidance for students choosing universities, majors, and planning their academic journey.",
+      features: [
+        "University selection criteria",
+        "Major exploration and matching",
+        "Application strategy planning",
+        "Scholarship and funding guidance",
+        "Academic timeline planning",
+        "Career pathway mapping"
+      ],
+      icon: "🎓",
+      category: "Education"
     }
   ];
+
+  const handleServiceSelect = (service) => {
+    setSelectedService(service);
+    setCurrentStep(2);
+  };
 
   // Generate available time slots
   const generateTimeSlots = () => {
@@ -183,6 +249,7 @@ const Booking = () => {
 
   const renderStepIndicator = () => {
     const steps = [
+      { number: 1, title: 'Choose Service' },
       { number: 2, title: 'Choose Date & Time' },
       { number: 3, title: 'Your Information' },
       { number: 4, title: 'Payment' },
@@ -749,6 +816,48 @@ const Booking = () => {
         {renderStepIndicator()}
 
         <div className="mt-8">
+          {currentStep === 1 && (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Choose Your Service</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {services.map((service) => (
+                  <div
+                    key={service.id}
+                    className="border border-gray-200 rounded-lg p-6 hover:border-blue-500 cursor-pointer transition-colors h-full flex flex-col"
+                    onClick={() => handleServiceSelect(service)}
+                  >
+                    <div className="text-center mb-4">
+                      <div className="text-4xl mb-3">{service.icon}</div>
+                      <h3 className="text-lg font-semibold text-gray-800 mb-2">{service.name}</h3>
+                      <div className="flex justify-center items-center gap-2 mb-3">
+                        <p className="text-xl font-bold text-blue-600">${service.price}</p>
+                        <span className="text-gray-400">•</span>
+                        <p className="text-sm text-gray-500">{service.duration}</p>
+                      </div>
+                    </div>
+                    
+                    <p className="text-gray-600 text-sm mb-4 text-center">{service.description}</p>
+                    
+                    <div className="flex-1 mb-4">
+                      <h4 className="text-sm font-medium text-gray-700 mb-3 text-center">What's included:</h4>
+                      <ul className="text-xs text-gray-600 space-y-2">
+                        {service.features.map((feature, index) => (
+                          <li key={index} className="flex items-start">
+                            <span className="text-green-500 mr-2 mt-0.5 flex-shrink-0">✓</span>
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium mt-auto">
+                      Select This Service
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {currentStep === 2 && renderDateTimeSelection()}
           {currentStep === 3 && renderInformationForm()}
           {currentStep === 4 && renderPayment()}

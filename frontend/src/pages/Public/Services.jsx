@@ -143,39 +143,39 @@ const Services = () => {
             {services.map((service) => (
               <div 
                 key={service.id} 
-                className="group bg-white rounded-xl shadow-lg border border-gray-200 p-8 relative hover:border-blue-600 hover:ring-4 hover:ring-blue-600 hover:ring-opacity-30 hover:shadow-2xl transition-all duration-500 cursor-pointer transform hover:-translate-y-2 hover:scale-105 animate-pulse-on-hover"
+                className="group bg-white rounded-xl shadow-lg border border-gray-200 p-8 relative hover:border-blue-600 hover:ring-4 hover:ring-blue-600 hover:ring-opacity-30 hover:shadow-2xl transition-all duration-500 cursor-pointer"
               >
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex items-center space-x-4">
-                    <span className="text-4xl group-hover:scale-125 group-hover:rotate-6 transition-all duration-500">{service.icon}</span>
+                    <span className="text-4xl">{service.icon}</span>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-500 group-hover:scale-105 transform">{service.title}</h3>
+                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-500">{service.title}</h3>
                       <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
                         <span className="flex items-center group-hover:text-blue-600 transition-colors duration-300">
-                          <svg className="w-4 h-4 mr-1 group-hover:animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
                           {service.duration}
                         </span>
-                        <span className="px-2 py-1 bg-gray-100 rounded text-xs font-medium group-hover:bg-blue-600 group-hover:text-white transition-all duration-500 transform group-hover:scale-110 group-hover:shadow-lg">
+                        <span className="px-2 py-1 bg-gray-100 rounded text-xs font-medium group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
                           {service.category}
                         </span>
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-3xl font-bold text-blue-600 group-hover:text-blue-800 transition-all duration-500 transform group-hover:scale-110 group-hover:animate-bounce">{service.price}</div>
+                    <div className="text-3xl font-bold text-blue-600 group-hover:text-blue-800 transition-all duration-500">{service.price}</div>
                   </div>
                 </div>
                 
                 <p className="text-gray-700 mb-6 group-hover:text-gray-900 transition-colors duration-500 group-hover:font-medium">{service.description}</p>
                 
                 <div className="mb-8">
-                  <h4 className="font-semibold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-500 group-hover:scale-105 transform">What's Included:</h4>
+                  <h4 className="font-semibold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-500">What's Included:</h4>
                   <ul className="space-y-2">
                     {service.features.map((feature, index) => (
-                      <li key={index} className="flex items-center text-sm text-gray-700 group-hover:text-gray-900 transition-all duration-500 transform group-hover:translate-x-2">
-                        <svg className="w-4 h-4 text-green-600 mr-3 flex-shrink-0 group-hover:text-green-700 group-hover:scale-125 transition-all duration-500" fill="currentColor" viewBox="0 0 20 20">
+                      <li key={index} className="flex items-center text-sm text-gray-700 group-hover:text-gray-900 transition-all duration-500">
+                        <svg className="w-4 h-4 text-green-600 mr-3 flex-shrink-0 group-hover:text-green-700 transition-all duration-500" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                         {feature}
@@ -187,13 +187,13 @@ const Services = () => {
                 <div className="flex flex-col sm:flex-row gap-3">
                   <Link
                     to={`/booking?service=${service.id}`}
-                    className="flex-1 bg-gray-200 text-gray-700 group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-blue-700 group-hover:text-white px-6 py-3 rounded-lg font-medium transition-all duration-500 text-center transform group-hover:scale-110 group-hover:shadow-2xl group-hover:shadow-blue-500/50 group-hover:-translate-y-1"
+                    className="flex-1 bg-gray-200 text-gray-700 group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-blue-700 group-hover:text-white px-6 py-3 rounded-lg font-medium transition-all duration-500 text-center"
                   >
                     Book Now
                   </Link>
                   <Link
                     to="/contact"
-                    className="flex-1 border border-gray-300 text-gray-700 hover:bg-gray-50 group-hover:border-blue-600 group-hover:text-blue-600 group-hover:bg-blue-50 px-6 py-3 rounded-lg font-medium transition-all duration-500 text-center transform group-hover:scale-105 group-hover:shadow-lg"
+                    className="flex-1 border border-gray-300 text-gray-700 hover:bg-gray-50 group-hover:border-blue-600 group-hover:text-blue-600 group-hover:bg-blue-50 px-6 py-3 rounded-lg font-medium transition-all duration-500 text-center"
                   >
                     Ask Questions
                   </Link>
@@ -330,47 +330,21 @@ const Services = () => {
       <section className="py-16 bg-blue-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
-            Ready to Transform Your Career?
+            Not Sure Which Service Is Right for You?
           </h2>
           <p className="text-xl text-blue-100 mb-8">
-            Choose the service that's right for you and take the first step towards your ideal career.
+            Schedule a free 15-minute consultation to discuss your needs and find the perfect service.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/booking"
               className="bg-white text-blue-600 hover:bg-blue-50 hover:shadow-2xl hover:shadow-blue-500/50 px-8 py-3 rounded-lg font-semibold transition-all duration-500 transform hover:scale-110 hover:-translate-y-1 shadow-lg"
             >
-              Book a Session
-            </Link>
-            <Link
-              to="/contact"
-              className="border border-white text-white hover:bg-blue-700 hover:shadow-2xl hover:shadow-white/30 px-8 py-3 rounded-lg font-semibold transition-all duration-500 transform hover:scale-105 hover:-translate-y-1"
-            >
-              Ask Questions
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Contact CTA */}
-      <section className="py-16 bg-gray-100">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">
-            Not Sure Which Service Is Right for You?
-          </h2>
-          <p className="text-xl text-gray-600 mb-8">
-            Schedule a free 15-minute consultation to discuss your needs and find the perfect service.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              to="/contact"
-              className="bg-blue-600 text-white hover:bg-blue-700 hover:shadow-2xl hover:shadow-blue-500/50 font-semibold px-8 py-3 rounded-lg transition-all duration-500 transform hover:scale-110 hover:-translate-y-1"
-            >
               Free Consultation
             </Link>
             <Link
               to="/contact"
-              className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white hover:shadow-2xl hover:shadow-blue-500/30 font-semibold px-8 py-3 rounded-lg transition-all duration-500 transform hover:scale-105 hover:-translate-y-1"
+              className="border border-white text-white hover:bg-blue-700 hover:shadow-2xl hover:shadow-white/30 px-8 py-3 rounded-lg font-semibold transition-all duration-500 transform hover:scale-105 hover:-translate-y-1"
             >
               Contact Us
             </Link>

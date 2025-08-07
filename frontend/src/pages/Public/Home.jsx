@@ -61,20 +61,23 @@ const Home = () => {
             <div className="flex justify-center lg:justify-end">
               <div className="relative">
                 <div className="w-80 h-80 bg-gray-200 rounded-2xl shadow-2xl overflow-hidden">
-                  {/* Placeholder for counselor photo */}
                   <div className="w-full h-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center">
                     <div className="text-white text-center">
-                      <div className="w-24 h-24 bg-white bg-opacity-20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                        <span className="text-3xl">👨‍💼</span>
+                      <div className="w-32 h-32 bg-white bg-opacity-20 rounded-full mx-auto mb-4 flex items-center justify-center">
+                        <span className="text-6xl">👩‍💼</span>
                       </div>
-                      <p className="text-lg font-medium">Dr. Sarah Johnson</p>
-                      <p className="text-sm opacity-90">Career Counselor</p>
+                      <p className="text-2xl font-bold">Dr. Sarah Johnson</p>
+                      <p className="text-lg opacity-90">Licensed Career Counselor</p>
                     </div>
                   </div>
                 </div>
-                {/* Floating elements */}
-                <div className="absolute -top-4 -right-4 w-16 h-16 bg-yellow-400 rounded-full opacity-80"></div>
-                <div className="absolute -bottom-4 -left-4 w-12 h-12 bg-green-400 rounded-full opacity-80"></div>
+                {/* Floating achievement badges */}
+                <div className="absolute -top-6 -right-6 bg-yellow-400 text-gray-900 px-4 py-2 rounded-full font-bold text-sm shadow-lg">
+                  10+ Years
+                </div>
+                <div className="absolute -bottom-6 -left-6 bg-green-400 text-gray-900 px-4 py-2 rounded-full font-bold text-sm shadow-lg">
+                  95% Success
+                </div>
               </div>
             </div>
           </div>

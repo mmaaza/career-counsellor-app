@@ -62,7 +62,13 @@ class ApiService {
   }
 
   async checkAvailability(date, time) {
-    return this.makeRequest(`/bookings/availability?date=${date}&time=${time}`);
+    if (time) {
+      // If time is provided, use query parameters (for specific time check)
+      return this.makeRequest(`/bookings/availability?date=${date}&time=${time}`);
+    } else {
+      // If only date is provided, use the check-availability endpoint
+      return this.makeRequest(`/bookings/check-availability/${date}`);
+    }
   }
 
   // Contact and newsletter methods

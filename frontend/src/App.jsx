@@ -4,7 +4,7 @@ import { DefaultLayout } from './layouts';
 import Home from './pages/Public/Home';
 import About from './pages/Public/About';
 import Services from './pages/Public/Services';
-import Booking from './pages/Admin/Booking';
+import Booking from './pages/Public/Booking';
 import BookingManagement from './pages/Admin/BookingManagement';
 import Contact from './pages/Public/Contact';
 

@@ -88,14 +88,6 @@ const Header = () => {
               )}
             </Link>
             
-            {/* Booking CTA Button */}
-            <Link 
-              to="/booking" 
-              className="ml-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-            >
-              Book Session
-            </Link>
-            
             {isCounsellorMode && (
               <button
                 onClick={disableCounsellorMode}
@@ -174,15 +166,6 @@ const Header = () => {
                     <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
                   )}
                 </div>
-              </Link>
-              
-              {/* Mobile Booking Button */}
-              <Link 
-                to="/booking" 
-                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200 text-center"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Book a Session
               </Link>
               
               {isCounsellorMode && (
