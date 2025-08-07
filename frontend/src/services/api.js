@@ -87,12 +87,38 @@ class ApiService {
   }
 
   // Services methods
-  async getServices() {
-    return this.makeRequest('/services');
+  async getServices(queryParams = '') {
+    return this.makeRequest(`/services${queryParams}`);
   }
 
   async getServiceById(id) {
     return this.makeRequest(`/services/${id}`);
+  }
+
+  async createService(serviceData) {
+    return this.makeRequest('/services', {
+      method: 'POST',
+      body: JSON.stringify(serviceData),
+    });
+  }
+
+  async updateService(id, serviceData) {
+    return this.makeRequest(`/services/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(serviceData),
+    });
+  }
+
+  async deleteService(id) {
+    return this.makeRequest(`/services/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async seedServices() {
+    return this.makeRequest('/services/seed', {
+      method: 'POST',
+    });
   }
 }
 

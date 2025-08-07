@@ -1,109 +1,39 @@
 import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import apiService from '../../services/api';
 
 const Services = () => {
-  const services = [
-    {
-      id: 1,
-      title: "One-on-One Career Counseling",
-      duration: "60 minutes",
-      price: "$150",
-      description: "Personalized career guidance and strategic planning session to help you navigate your professional journey.",
-      features: [
-        "Comprehensive career assessment",
-        "Goal setting and action planning",
-        "Industry insights and market analysis",
-        "Personalized career roadmap",
-        "Follow-up email summary",
-        "Resource recommendations"
-      ],
-      icon: "👥",
-      category: "Counseling"
-    },
-    {
-      id: 2,
-      title: "Quick Career Check-In",
-      duration: "30 minutes",
-      price: "$85",
-      description: "Brief consultation perfect for specific questions, quick guidance, or follow-up sessions.",
-      features: [
-        "Focused problem-solving",
-        "Quick career advice",
-        "Resume quick review",
-        "Interview preparation tips",
-        "Actionable next steps"
-      ],
-      icon: "⚡",
-      category: "Counseling"
-    },
-    {
-      id: 3,
-      title: "Career Assessment & Planning",
-      duration: "90 minutes",
-      price: "$200",
-      description: "Comprehensive assessment using validated tools to identify your ideal career path and create a detailed plan.",
-      features: [
-        "Myers-Briggs Type Indicator (MBTI)",
-        "Strong Interest Inventory",
-        "Values and skills assessment",
-        "Career exploration exercises",
-        "Detailed written report",
-        "90-day action plan"
-      ],
-      icon: "📊",
-      category: "Assessment"
-    },
-    {
-      id: 4,
-      title: "Resume Review & Enhancement",
-      duration: "45 minutes",
-      price: "$120",
-      description: "Professional resume review and optimization to help you stand out in today's competitive job market.",
-      features: [
-        "Comprehensive resume analysis",
-        "ATS optimization",
-        "Content and formatting improvements",
-        "Industry-specific keywords",
-        "Cover letter guidance",
-        "LinkedIn profile tips"
-      ],
-      icon: "📄",
-      category: "Documents"
-    },
-    {
-      id: 5,
-      title: "Interview Preparation Session",
-      duration: "90 minutes",
-      price: "$200",
-      description: "Intensive interview coaching with mock interviews and personalized feedback to boost your confidence.",
-      features: [
-        "Mock interview practice",
-        "Behavioral question preparation",
-        "Salary negotiation strategies",
-        "Body language coaching",
-        "Industry-specific interview tips",
-        "Post-interview follow-up guidance"
-      ],
-      icon: "🎯",
-      category: "Interview"
-    },
-    {
-      id: 6,
-      title: "University & Major Guidance",
-      duration: "75 minutes",
-      price: "$130",
-      description: "Specialized guidance for students choosing universities, majors, and planning their academic journey.",
-      features: [
-        "University selection criteria",
-        "Major exploration and matching",
-        "Application strategy planning",
-        "Scholarship and funding guidance",
-        "Academic timeline planning",
-        "Career pathway mapping"
-      ],
-      icon: "🎓",
-      category: "Education"
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+
+  useEffect(() => {
+    fetchServices();
+  }, [selectedCategory]);
+
+  const fetchServices = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const queryParams = selectedCategory !== 'all' ? `?category=${selectedCategory}` : '';
+      const response = await apiService.getServices(queryParams);
+      
+      if (response.success) {
+        setServices(response.data);
+      } else {
+        setError('Failed to load services');
+      }
+    } catch (err) {
+      console.error('Error fetching services:', err);
+      setError('Failed to load services. Please try again later.');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const categories = ['all', 'Counseling', 'Assessment', 'Documents', 'Interview', 'Education'];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -138,69 +68,111 @@ const Services = () => {
             </p>
           </div>
 
-          {/* Services Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {services.map((service) => (
-              <div 
-                key={service.id} 
-                className="group bg-white rounded-xl shadow-lg border border-gray-200 p-8 relative hover:border-blue-600 hover:ring-4 hover:ring-blue-600 hover:ring-opacity-30 hover:shadow-2xl transition-all duration-500 cursor-pointer"
+          {/* Category Filter */}
+          <div className="flex flex-wrap justify-center gap-3 mb-8">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
+                  selectedCategory === category
+                    ? 'bg-blue-600 text-white shadow-lg'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
               >
-                <div className="flex items-start justify-between mb-6">
-                  <div className="flex items-center space-x-4">
-                    <span className="text-4xl">{service.icon}</span>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-500">{service.title}</h3>
-                      <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
-                        <span className="flex items-center group-hover:text-blue-600 transition-colors duration-300">
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          {service.duration}
-                        </span>
-                        <span className="px-2 py-1 bg-gray-100 rounded text-xs font-medium group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
-                          {service.category}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-3xl font-bold text-blue-600 group-hover:text-blue-800 transition-all duration-500">{service.price}</div>
-                  </div>
-                </div>
-                
-                <p className="text-gray-700 mb-6 group-hover:text-gray-900 transition-colors duration-500 group-hover:font-medium">{service.description}</p>
-                
-                <div className="mb-8">
-                  <h4 className="font-semibold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-500">What's Included:</h4>
-                  <ul className="space-y-2">
-                    {service.features.map((feature, index) => (
-                      <li key={index} className="flex items-center text-sm text-gray-700 group-hover:text-gray-900 transition-all duration-500">
-                        <svg className="w-4 h-4 text-green-600 mr-3 flex-shrink-0 group-hover:text-green-700 transition-all duration-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Link
-                    to={`/booking?service=${service.id}`}
-                    className="flex-1 bg-gray-200 text-gray-700 group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-blue-700 group-hover:text-white px-6 py-3 rounded-lg font-medium transition-all duration-500 text-center"
-                  >
-                    Book Now
-                  </Link>
-                  <Link
-                    to="/contact"
-                    className="flex-1 border border-gray-300 text-gray-700 hover:bg-gray-50 group-hover:border-blue-600 group-hover:text-blue-600 group-hover:bg-blue-50 px-6 py-3 rounded-lg font-medium transition-all duration-500 text-center"
-                  >
-                    Ask Questions
-                  </Link>
-                </div>
-              </div>
+                {category === 'all' ? 'All Services' : category}
+              </button>
             ))}
           </div>
+
+          {/* Loading State */}
+          {loading && (
+            <div className="text-center py-12">
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <p className="mt-4 text-gray-600">Loading services...</p>
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && (
+            <div className="text-center py-12">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md mx-auto">
+                <p className="text-red-600 mb-4">{error}</p>
+                <button
+                  onClick={fetchServices}
+                  className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Services Grid */}
+          {!loading && !error && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {services.map((service) => (
+                <div 
+                  key={service.serviceId} 
+                  className="group bg-white rounded-xl shadow-lg border border-gray-200 p-8 relative hover:border-blue-600 hover:ring-4 hover:ring-blue-600 hover:ring-opacity-30 hover:shadow-2xl transition-all duration-500 cursor-pointer"
+                >
+                  <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-center space-x-4">
+                      <span className="text-4xl">{service.icon}</span>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-500">{service.title}</h3>
+                        <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
+                          <span className="flex items-center group-hover:text-blue-600 transition-colors duration-300">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {service.duration}
+                          </span>
+                          <span className="px-2 py-1 bg-gray-100 rounded text-xs font-medium group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
+                            {service.category}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-3xl font-bold text-blue-600 group-hover:text-blue-800 transition-all duration-500">{service.price}</div>
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-700 mb-6 group-hover:text-gray-900 transition-colors duration-500 group-hover:font-medium">{service.description}</p>
+                  
+                  <div className="mb-8">
+                    <h4 className="font-semibold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-500">What's Included:</h4>
+                    <ul className="space-y-2">
+                      {service.features.map((feature, index) => (
+                        <li key={index} className="flex items-center text-sm text-gray-700 group-hover:text-gray-900 transition-all duration-500">
+                          <svg className="w-4 h-4 text-green-600 mr-3 flex-shrink-0 group-hover:text-green-700 transition-all duration-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          </svg>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Link
+                      to={`/booking?service=${service.serviceId}`}
+                      className="flex-1 bg-gray-200 text-gray-700 group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-blue-700 group-hover:text-white px-6 py-3 rounded-lg font-medium transition-all duration-500 text-center"
+                    >
+                      Book Now
+                    </Link>
+                    <Link
+                      to="/contact"
+                      className="flex-1 border border-gray-300 text-gray-700 hover:bg-gray-50 group-hover:border-blue-600 group-hover:text-blue-600 group-hover:bg-blue-50 px-6 py-3 rounded-lg font-medium transition-all duration-500 text-center"
+                    >
+                      Ask Questions
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

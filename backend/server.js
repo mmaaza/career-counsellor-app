@@ -7,6 +7,7 @@ const PORT = process.env.PORT || 5000;
 
 // Import routes
 const bookingRoutes = require('./routes/bookings');
+const serviceRoutes = require('./routes/services');
 // const contactRoutes = require('./routes/contacts');
 // const authRoutes = require('./routes/auth');
 
@@ -53,6 +54,7 @@ process.on('SIGINT', async () => {
 
 // Routes
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/services', serviceRoutes);
 // app.use('/api/contacts', contactRoutes);
 // app.use('/api/auth', authRoutes);
 
