@@ -1,3 +1,6 @@
+app.get("/", (req, res) => {
+  res.send("Backend is running and connected to database ✅");
+});
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CounsellorModeProvider } from './contexts/CounsellorModeContext';
 import { DefaultLayout, AdminLayout } from './layouts';
