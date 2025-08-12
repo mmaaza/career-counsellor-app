@@ -1,3 +1,6 @@
+fetch("")
+    .then(res => res.text())
+    .then(data => console.log(data));
 
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { CounsellorModeProvider } from './contexts/CounsellorModeContext';
