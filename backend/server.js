@@ -11,14 +11,9 @@ const serviceRoutes = require('./routes/services');
 // const contactRoutes = require('./routes/contacts');
 const authRoutes = require('./routes/auth');
 
-// CORS Configuration
+// CORS Configuration - Allow All Origins
 const corsOptions = {
-  origin: [
-    'https://counsellorapp.netlify.app',
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://career-counsellor-app-production.up.railway.app'
-  ],
+  origin: true, // This allows all origins
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
