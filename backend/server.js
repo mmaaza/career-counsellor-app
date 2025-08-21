@@ -13,8 +13,7 @@ const authRoutes = require('./routes/auth');
 
 // CORS Configuration - Allow All Origins
 const corsOptions = {
-  origin: true, // This allows all origins
-  credentials: true,
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
