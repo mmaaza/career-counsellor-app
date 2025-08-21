@@ -11,8 +11,21 @@ const serviceRoutes = require('./routes/services');
 // const contactRoutes = require('./routes/contacts');
 const authRoutes = require('./routes/auth');
 
+// CORS Configuration
+const corsOptions = {
+  origin: [
+    'https://counsellorapp.netlify.app',
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://career-counsellor-app-production.up.railway.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // MongoDB Connection with better options

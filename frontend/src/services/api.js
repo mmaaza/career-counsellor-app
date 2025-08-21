@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://career-counsellor-app.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://career-counsellor-app-production.up.railway.app/api';
 
 class ApiService {
   // Get JWT token from localStorage
